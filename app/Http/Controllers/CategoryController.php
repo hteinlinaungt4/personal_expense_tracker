@@ -16,10 +16,16 @@ class CategoryController extends Controller
     }
 
     public function store(Request $request){
-        $categories = new Category();
-        $categories->name = $request->name;
-        $categories->save();
-        return view('category.store');
+
+        $request->validate([
+            'name' => 'required',
+        ]);
+
+        Category::create([
+            'name' => $request->name
+        ]);
+
+        return response()->json(['message' => 'Category created successfully']);
     }
 
     public function destory(Category $category){

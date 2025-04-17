@@ -14,6 +14,7 @@ Route::get('/dashboard', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/category',[CategoryController::class,'index'] )->name('category.index');
+    Route::post('/category',[CategoryController::class,'store'])->name('category.store');
 });
 
 // Route::middleware('auth')->group(function () {
