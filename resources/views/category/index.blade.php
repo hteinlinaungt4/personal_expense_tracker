@@ -2,59 +2,43 @@
 @section('title', 'Categories')
 
 @section('content')
-    <div class="card">
-        <div class="card-header">
-            <div class="d-flex justify-content-end">
-                <!-- Button trigger modal -->
-                <button type="button" class="btn btn-primary" id="createBtn">
-                    <i class="fa fa-plus-circle"></i> Create
-                </button>
-            </div>
-        </div>
-        <div class="card-body">
-            <table class="table table-bordered table-striped" id="categoryTable">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Created At</th>
-                        <th>Updated At</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($categories as $category)
-                        <tr id="row-{{ $category->id }}">
-                            <td class="cat-name">{{ $category->name }}</td>
-                            <td class="cat-created">{{ $category->created_at->format('d-m-Y h:i:s A') }}</td>
-                            <td class="cat-updated">{{ $category->updated_at->format('d-m-Y h:i:s A') }}</td>
-                            <td>
-                                <button class="btn btn-primary edit-btn" data-id="{{ $category->id }}">Edit</button>
-                                <button class="btn btn-danger delete-btn" data-id="{{ $category->id }}">Delete</button>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
+
+    <!-- Button trigger modal -->
+  <div class="d-flex justify-content-end">
+    <button id="createBtn" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+        Add Category
+    </button>
+  </div>
+
+    <table class="table table-bordered table-hover table-striped" id="datatable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Created at</th>
+                <th>Updated at</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+    </table>
 
     <!-- Modal -->
-    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="staticBackdropLabel">Create Category</h5>
+                    <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="form">
-                    @csrf
-                    <input type="hidden" id="categoryId">
+                <form action="" id="form">
                     <div class="modal-body">
-                        <input type="text" name="name" class="form-control" id="categoryName" placeholder="Enter category name" required>
+                        @csrf
+                        <input type="hidden" name="id" id="category_id">
+                        <input type="text" name="name" class="form-control" placeholder="Enter Category Name">
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary" id="formSubmitBtn">Create</button>
+                        <button type="submit " class="btn btn-primary">Create</button>
                     </div>
                 </form>
             </div>
@@ -63,115 +47,159 @@
 @endsection
 
 @push('scripts')
-<script>
-    $(document).ready(function () {
-        // Open modal for create
-        $('#createBtn').on('click', function () {
-            $('#form')[0].reset();
-            $('#categoryId').val('');
-            $('#staticBackdropLabel').text('Create Category');
-            $('#formSubmitBtn').text('Create');
-            $('#staticBackdrop').modal('show');
-        });
-
-        // Edit Category
-        $(document).on('click', '.edit-btn', function () {
-            const id = $(this).data('id');
-
-            $.get('/category/' + id, function (data) {
-                $('#categoryId').val(data.id);
-                $('#categoryName').val(data.name);
-                $('#staticBackdropLabel').text('Edit Category');
-                $('#formSubmitBtn').text('Update');
-                $('#staticBackdrop').modal('show');
-            });
-        });
-
-        // Create/Update Submit
-        $('#form').on('submit', function (e) {
-            e.preventDefault();
-            const id = $('#categoryId').val();
-            const name = $('#categoryName').val();
-            const url = id ? `/category/${id}` : `{{ route('category.store') }}`;
-            const method = id ? 'PUT' : 'POST';
-
-            $.ajax({
-                url: url,
-                type: method,
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    name: name
+    <script>
+        $(document).ready(function() {
+            var datatable = new DataTable('#datatable', {
+                ajax: {
+                    url: '{{ route('category.datatable') }}'
                 },
-                success: function (res) {
-                    $('#staticBackdrop').modal('hide');
-                    $('#form')[0].reset();
-                    Swal.fire({
-                        icon: 'success',
-                        title: id ? 'Updated!' : 'Created!',
-                        text: res.message
-                    });
+                processing: true,
+                serverSide: true,
+                responsive: true,
+                search: true,
+                mark: true,
+                columns: [{
+                        data: 'name'
+                    },
+                    {
+                        data: 'created_at'
+                    },
+                    {
+                        data: 'updated_at'
+                    },
+                    {
+                        data: 'actions'
+                    },
+                ],
+            });
 
-                    const now = new Date();
-                    const createdAt = now.toLocaleString('en-GB');
 
-                    if (id) {
-                        const row = $('#row-' + id);
-                        row.find('.cat-name').text(name);
-                        row.find('.cat-updated').text(createdAt);
-                    } else {
-                        $('#categoryTable tbody').append(`
-                            <tr id="row-${res.id}">
-                                <td class="cat-name">${name}</td>
-                                <td class="cat-created">${createdAt}</td>
-                                <td class="cat-updated">${createdAt}</td>
-                                <td>
-                                    <button class="btn btn-primary edit-btn" data-id="${res.id}">Edit</button>
-                                    <button class="btn btn-danger delete-btn" data-id="${res.id}">Delete</button>
-                                </td>
-                            </tr>
-                        `);
+
+            $(document).on('click', '.edit-btn', function(e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                $('#category_id').val(id);
+
+                $.ajax({
+                    url: '{{ route('category.show', ':id') }}'.replace(':id', id),
+                    type: 'GET',
+                    success: function(response) {
+                        $('#staticBackdrop').modal('show');
+                        $('#staticBackdropLabel').text('Edit Category');
+                        $('#form').attr('action', '{{ route('category.update', ':id') }}'
+                            .replace(':id', id));
+                        $('input[name="name"]').val(response.name);
+                    },
+                    error: function(response) {
+                        Swal.fire({
+                            title: 'Error',
+                            text: response.message,
+                            icon: 'error'
+                        })
                     }
-                },
-                error: function (xhr) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: xhr.responseJSON.message
-                    });
-                }
-            });
-        });
 
-        // Delete Category
-        $(document).on('click', '.delete-btn', function () {
-            const id = $(this).data('id');
-            Swal.fire({
-                title: 'Are you sure?',
-                text: 'This action cannot be undone!',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: '/category/' + id,
-                        type: 'DELETE',
-                        data: {
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: function (res) {
-                            $('#row-' + id).remove();
-                            Swal.fire('Deleted!', res.message, 'success');
-                        },
-                        error: function (xhr) {
-                            Swal.fire('Error!', xhr.responseText, 'error');
-                        }
-                    });
-                }
+                });
             });
+
+            $("#createBtn").click(function() {
+                $('#staticBackdrop').modal('show');
+                $('#category_id').val('');
+                $('#staticBackdropLabel').text('Add Category');
+                $('#form').attr('action', '{{ route('category.store') }}');
+                $('input[name="name"]').val('');
+            });
+
+
+
+            $('#form').submit(function(e) {
+                e.preventDefault();
+                var id = $('#category_id').val();
+
+                var name = $('input[name="name"]').val();
+                var url = id ? '{{ route('category.update', ':id') }}'.replace(':id', id) :
+                    '{{ route('category.store') }}';
+
+                $.ajax({
+                    url: url,
+                    type: id ? 'PUT' : 'POST',
+                    data: {
+                        name: name,
+                    },
+                    success: function(response) {
+                        $('#staticBackdrop').modal('hide');
+                        datatable.draw();
+                        Swal.fire({
+                            title: 'Success',
+                            text: response.message,
+                            icon: 'success'
+                        })
+                    },
+                    error: function(response) {
+                        $('#form')[0].reset();
+                        var errors = response.responseJSON.errors;
+                        var errorHtml = '';
+                        $.each(errors, function(key, value) {
+                            errorHtml += '<li>' + value + '</li>';
+                        });
+                        Swal.fire({
+                            title: 'Error',
+                            html: '<ul>' + errorHtml + '</ul>',
+                            icon: 'error'
+                        });
+                    }
+                });
+
+            });
+
+
+            $(document).on('click', '.delete-btn', function(e) {
+                e.preventDefault();
+                var url = $(this).data('url');
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "You won't be able to revert this!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, delete it!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        $.ajax({
+                            url: url,
+                            type: 'Delete',
+                            success: function(response) {
+                                Swal.fire({
+                                    title: "Deleted!",
+                                    text: response.message,
+                                    icon: "success",
+                                    timer: 1500
+                                });
+                                datatable.ajax.reload();
+                            },
+                            error: function(response) {
+                                var errors = response.responseJSON.errors;
+                                var errorHtml = '';
+                                $.each(errors, function(key, value) {
+                                    errorHtml += '<li>' + value + '</li>';
+                                });
+                                Swal.fire({
+                                    title: 'Error',
+                                    html: '<ul>' + errorHtml + '</ul>',
+                                    icon: 'error'
+                                });
+                            }
+
+                        });
+
+                    }
+                });
+
+
+            })
+
+
         });
-    });
-</script>
+    </script>
 @endpush
