@@ -3,6 +3,7 @@
 use App\Models\Category;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CategoryController;
 
@@ -18,6 +19,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // category
     Route::resource('category', CategoryController::class)->only('index', 'store', 'update', 'destroy','show');
     Route::get('categorydatatable',[CategoryController::class,'categoryDatatable'])->name('category.datatable');
+
+    // income
+    Route::resource('income', IncomeController::class)->only('index', 'store', 'update', 'destroy','show');
+    Route::get('incomedatatable',[IncomeController::class,'incomeDatatable'])->name('income.datatable');
 
 });
 

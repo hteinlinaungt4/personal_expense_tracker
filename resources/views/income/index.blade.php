@@ -1,22 +1,22 @@
 @extends('layouts.master')
-@section('category', 'active')
-@section('title', 'Categories')
-
+@section('title', 'Income')
+@section('income', 'active')
 @section('content')
 
     <!-- Button trigger modal -->
   <div class="d-flex justify-content-end">
     <button id="createBtn" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-        Add Category
+        Add Income
     </button>
   </div>
 
     <table class="table table-bordered table-hover table-striped" id="datatable">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Created at</th>
-                <th>Updated at</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Date</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -32,10 +32,17 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form action="" id="form">
+                    <input type="hidden" name="income_id" id="income_id">
                     <div class="modal-body">
                         @csrf
-                        <input type="hidden" name="id" id="category_id">
-                        <input type="text" name="name" class="form-control" placeholder="Enter Category Name">
+                        <select class="form-control mb-3" name="category_id" id="">
+                          <option value="">Select Category</option>
+                          @foreach ($categories as $category)
+                            <option value="{{$category->id}}" @selected(old('category_id') == $category->id)  >{{$category->name}}</option>
+                          @endforeach
+                        </select>
+                        <textarea name="description" id=""class="form-control mb-3" rows="10" placeholder="Enter Description"></textarea>
+                        <input type="number" class="form-control" name="amount" placeholder="Enter Amount">
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -52,21 +59,25 @@
         $(document).ready(function() {
             var datatable = new DataTable('#datatable', {
                 ajax: {
-                    url: '{{ route('category.datatable') }}'
+                    url: '{{ route('income.datatable') }}'
                 },
                 processing: true,
                 serverSide: true,
                 responsive: true,
                 search: true,
                 mark: true,
-                columns: [{
-                        data: 'name'
+                columns: [
+                    {
+                        data: 'category_name'
                     },
                     {
-                        data: 'created_at'
+                        data: 'description'
                     },
                     {
-                        data: 'updated_at'
+                        data: 'amount'
+                    },
+                    {
+                        data: 'date'
                     },
                     {
                         data: 'actions'
@@ -79,17 +90,20 @@
             $(document).on('click', '.edit-btn', function(e) {
                 e.preventDefault();
                 var id = $(this).data('id');
-                $('#category_id').val(id);
+                $('#income_id').val(id);
 
                 $.ajax({
-                    url: '{{ route('category.show', ':id') }}'.replace(':id', id),
+                    url: '{{ route('income.show', ':id') }}'.replace(':id', id),
                     type: 'GET',
                     success: function(response) {
                         $('#staticBackdrop').modal('show');
                         $('#staticBackdropLabel').text('Edit Category');
                         $('#form').attr('action', '{{ route('category.update', ':id') }}'
                             .replace(':id', id));
-                        $('input[name="name"]').val(response.name);
+                        $('textarea[name="description"]').val(response.description);
+                        $('input[name="amount"]').val(response.amount);
+                        $('select[name="category_id"]').val(response.category_id);
+
                     },
                     error: function(response) {
                         Swal.fire({
@@ -104,27 +118,34 @@
 
             $("#createBtn").click(function() {
                 $('#staticBackdrop').modal('show');
-                $('#category_id').val('');
+                $('#income_id').val('');
                 $('#staticBackdropLabel').text('Add Category');
-                $('#form').attr('action', '{{ route('category.store') }}');
-                $('input[name="name"]').val('');
+                $('#form').attr('action', '{{ route('income.store') }}');
+                $('input[name="description"]').val('');
+                $('input[name="amount"]').val('');
+                $('select[name="category_id"]').val('');
             });
 
 
 
             $('#form').submit(function(e) {
                 e.preventDefault();
-                var id = $('#category_id').val();
+                var id = $('#income_id').val();
 
-                var name = $('input[name="name"]').val();
-                var url = id ? '{{ route('category.update', ':id') }}'.replace(':id', id) :
-                    '{{ route('category.store') }}';
+                alert(id);
+                var description = $('textarea[name="description"]').val();
+                var category_id = $('select[name="category_id"]').val();
+                var amount = $('input[name="amount"]').val();
+                var url = id ? '{{ route('income.update', ':id') }}'.replace(':id', id) :
+                    '{{ route('income.store') }}';
 
                 $.ajax({
                     url: url,
                     type: id ? 'PUT' : 'POST',
                     data: {
-                        name: name,
+                        description: description,
+                        category_id: category_id,
+                        amount: amount
                     },
                     success: function(response) {
                         $('#staticBackdrop').modal('hide');
