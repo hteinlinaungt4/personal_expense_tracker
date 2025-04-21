@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CategoryController;
-
+use App\Http\Controllers\OutcomeController;
 
 Route::redirect('/', '/login', 301);
 
@@ -23,6 +23,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // income
     Route::resource('income', IncomeController::class)->only('index', 'store', 'update', 'destroy','show');
     Route::get('incomedatatable',[IncomeController::class,'incomeDatatable'])->name('income.datatable');
+    Route::get('incomechart',[IncomeController::class,'incomeChart'])->name('income.chart');
+
+     // income
+     Route::resource('outcome', OutcomeController::class)->only('index', 'store', 'update', 'destroy','show');
+     Route::get('outcomedatatable',[OutcomeController::class,'outcomeDatatable'])->name('outcome.datatable');
+     Route::get('outcomechart',[OutcomeController::class,'outcomeChart'])->name('outcome.chart');
+
 
 });
 

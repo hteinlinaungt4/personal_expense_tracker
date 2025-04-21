@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use Exception;
+use Carbon\Carbon;
 use App\Models\Income;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class IncomeController extends Controller
@@ -96,5 +98,44 @@ class IncomeController extends Controller
         $income->delete();
 
         return response()->json(['message' => 'Deleted successfully']);
+    }
+
+
+    public function incomeChart(){
+        $last7DaysIncome = Income::selectRaw('DATE(created_at) as date, SUM(amount) as total')
+        ->where('created_at', '>=', Carbon::now()->subDays(6)->startOfDay())
+        ->where('user_id', Auth::id())
+        ->groupBy(DB::raw('DATE(created_at)'))
+        ->orderBy('date')
+        ->pluck('total', 'date');
+
+
+
+
+        $last6WeeksIncome = Income::selectRaw("YEAR(created_at) as year, WEEK(created_at, 1) as week, SUM(amount) as total")
+            ->where('created_at', '>=', Carbon::now()->subWeeks(5)->startOfWeek()) // 6 weeks including current week
+            ->where('user_id', Auth::id())
+            ->groupBy('year', 'week')
+            ->orderBy('year')
+            ->orderBy('week')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return ["{$item->year}-W{$item->week}" => $item->total];
+            });
+
+
+        $last6MonthsIncome = Income::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, SUM(amount) as total")
+            ->where('created_at', '>=', Carbon::now()->subMonths(5)->startOfMonth()) // 6 months including current month
+            ->where('user_id', Auth::id())
+            ->groupBy('month')
+            ->orderBy('month')
+            ->pluck('total', 'month');
+
+
+        $totalIncomeAmount = Income::where('user_id', Auth::user()->id)->sum('amount');
+
+
+        return view('income.chart', compact('last7DaysIncome', 'last6WeeksIncome', 'last6MonthsIncome', 'totalIncomeAmount'));
+
     }
 }

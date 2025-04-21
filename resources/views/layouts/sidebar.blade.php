@@ -38,6 +38,7 @@
              <div class="bg-white py-2 collapse-inner rounded">
                 <h6 class="collapse-header">Sub Income Lists</h6>
                 <a class="collapse-item" href="{{route('income.index')}}">Lists</a>
+                <a class="collapse-item" href="{{route('income.chart')}}">Chart</a>
              </div>
          </div>
      </li>
@@ -52,11 +53,9 @@
          <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
              data-parent="#accordionSidebar">
              <div class="bg-white py-2 collapse-inner rounded">
-                 <h6 class="collapse-header">Custom Utilities:</h6>
-                 <a class="collapse-item" href="utilities-color.html">Colors</a>
-                 <a class="collapse-item" href="utilities-border.html">Borders</a>
-                 <a class="collapse-item" href="utilities-animation.html">Animations</a>
-                 <a class="collapse-item" href="utilities-other.html">Other</a>
+                <h6 class="collapse-header">Sub Outcome Lists</h6>
+                <a class="collapse-item" href="{{route('outcome.index')}}">Lists</a>
+                <a class="collapse-item" href="{{route('outcome.chart')}}">Chart</a>
              </div>
          </div>
      </li>
