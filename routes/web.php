@@ -1,12 +1,11 @@
 <?php
 
-use App\Models\Category;
-use Yajra\DataTables\DataTables;
+
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\IncomeController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OutcomeController;
+use App\Http\Controllers\CategoryController;
 
 Route::redirect('/', '/login', 301);
 
@@ -31,9 +30,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
      Route::get('outcomechart',[OutcomeController::class,'outcomeChart'])->name('outcome.chart');
 
 
-});
+     Route::post('/generate-income-pdf', [IncomeController::class, 'generateIncomePdf']);
+     Route::get('/download-pdf/{filename}', function ($filename) {
+         return Storage::download("public/pdf/{$filename}");
+     });
 
-Route::get('test',[CategoryController::class,'test'])->name('test');
+});
 
 // Route::middleware('auth')->group(function () {
 //     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

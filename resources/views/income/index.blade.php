@@ -132,7 +132,6 @@
                 e.preventDefault();
                 var id = $('#income_id').val();
 
-                alert(id);
                 var description = $('textarea[name="description"]').val();
                 var category_id = $('select[name="category_id"]').val();
                 var amount = $('input[name="amount"]').val();
